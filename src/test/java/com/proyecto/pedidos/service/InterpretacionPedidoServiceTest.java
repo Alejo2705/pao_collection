@@ -86,6 +86,17 @@ class InterpretacionPedidoServiceTest {
         assertTrue(r.getObservaciones().stream().anyMatch(t -> t.contains("Stock insuficiente")));
     }
 
+    @Test void aclaracionDeModelosDuplicadosNoExponeIdsAunqueIANoElijaUnProducto() {
+        var r = interpretar("Hola, quisiera una pulsera de 7 chakras", "CREAR_PEDIDO", 0, 1,
+                List.of(producto(13, "7CHK", "PULSERA 7 CHAKRAS", "25"),
+                        producto(16, "P7CH", "PULSERA 7 CHAKRAS", "30")));
+        assertTrue(r.isRequiereRevision());
+        assertTrue(r.getRespuestaSugerida().contains("S/ 25.00"));
+        assertTrue(r.getRespuestaSugerida().contains("S/ 30.00"));
+        assertFalse(r.getRespuestaSugerida().contains("producto 13"));
+        assertFalse(r.getRespuestaSugerida().contains("7CHK"));
+    }
+
     @Test void productoInventadoNuncaSeConvierteEnPedido() {
         var r = interpretar("Quiero un accesorio", "CREAR_PEDIDO", 999, 1,
                 List.of(producto(1, "PULOT", "PULSERA OJO TIGRE HILO", "35")));
