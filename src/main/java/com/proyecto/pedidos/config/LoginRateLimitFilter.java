@@ -26,7 +26,9 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         if ("POST".equals(request.getMethod()) &&
                 (request.getContextPath() + "/login").equals(request.getRequestURI()) && !allow()) {
             response.setHeader("Retry-After", "60");
-            response.sendError(429, "Demasiados intentos. Espera un minuto.");
+            response.setStatus(429);
+            response.setContentType("text/plain;charset=UTF-8");
+            response.getWriter().write("Demasiados intentos. Espera un minuto.");
             return;
         }
         chain.doFilter(request, response);

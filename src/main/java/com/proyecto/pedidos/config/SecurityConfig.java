@@ -42,7 +42,7 @@ public class SecurityConfig {
         var entryPoints = new java.util.LinkedHashMap<org.springframework.security.web.util.matcher.RequestMatcher,
                 org.springframework.security.web.AuthenticationEntryPoint>();
         entryPoints.put(new AntPathRequestMatcher("/api/**"),
-                (request, response, exception) -> response.sendError(401));
+                (request, response, exception) -> response.setStatus(401));
         var entryPoint = new org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint(entryPoints);
         entryPoint.setDefaultEntryPoint(new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login.html"));
         http.authorizeHttpRequests(auth -> auth
@@ -60,7 +60,8 @@ public class SecurityConfig {
             .logout(logout -> logout.logoutUrl("/logout")
                     .logoutSuccessUrl("/login.html?logout")
                     .invalidateHttpSession(true).deleteCookies("JSESSIONID"))
-            .exceptionHandling(errors -> errors.authenticationEntryPoint(entryPoint))
+            .exceptionHandling(errors -> errors.authenticationEntryPoint(entryPoint)
+                    .accessDeniedHandler((request, response, exception) -> response.setStatus(403)))
             .sessionManagement(session -> session.sessionFixation(fixation -> fixation.changeSessionId()))
             .headers(headers -> headers.contentSecurityPolicy(csp -> csp.policyDirectives(
                     "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
