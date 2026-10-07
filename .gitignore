@@ -1,0 +1,32 @@
+# Build and editors
+target/
+.idea/
+.vscode/
+*.iml
+*.log
+logs/
+
+# Local credentials and configuration
+.env
+.env.*
+!.env.example
+application-local.properties
+application-local.yml
+application-local.yaml
+application-secrets.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+credentials*.json
+secrets/
+*token*.txt
+*secret*.txt
+
+# Local backups and diagnostic artifacts
+respaldo*/
+*.zip
+*.sql
+*.dump
+hs_err_pid*

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pao Collection | Gestión de pedidos</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/img/logo-pao-collection.jpg" alt="Pao Collection" class="brand-logo">
+        <div>
+          <h1>Pao Collection</h1>
+          <p>Gestión de pedidos</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-section="dashboard">Dashboard</button>
+        <button class="nav-item" data-section="clientes">Clientes</button>
+        <button class="nav-item" data-section="productos">Productos</button>
+        <button class="nav-item" data-section="pedidos">Pedidos</button>
+        <button class="nav-item" data-section="simulador">Asistente IA</button>
+        <button class="nav-item" data-section="instagram">Instagram</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="status-dot"></span>
+        Backend conectado
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Sistema inteligente de gestión de pedidos</p>
+          <h2 id="pageTitle">Dashboard</h2>
+        </div>
+        <div class="topbar-actions">
+          <span class="date" id="currentDate"></span>
+        </div>
+      </header>
+
+      <section id="dashboard" class="page-section active">
+        <div class="cards-grid">
+          <article class="stat-card">
+            <span class="stat-label">Pedidos</span>
+            <strong id="statPedidos">0</strong>
+            <small>Registrados</small>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-label">Ventas completadas</span>
+            <strong id="statVentas">S/ 0.00</strong>
+            <small>Pedidos completados</small>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-label">Clientes</span>
+            <strong id="statClientes">0</strong>
+            <small>Registrados</small>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-label">Stock bajo</span>
+            <strong id="statStockBajo">0</strong>
+            <small>Productos con 5 o menos</small>
+          </article>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Pedidos recientes</h3>
+              <p>Últimos movimientos registrados</p>
+            </div>
+            <button class="btn btn-secondary" data-go="pedidos">Ver pedidos</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Total</th>
+              </tr>
+              </thead>
+              <tbody id="dashboardPedidosBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="clientes" class="page-section">
+        <div class="section-toolbar">
+          <div>
+            <h3>Clientes</h3>
+            <p>Administra los clientes de Pao Collection.</p>
+          </div>
+          <button class="btn btn-primary" id="btnNuevoCliente">+ Nuevo cliente</button>
+        </div>
+
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombres</th>
+                <th>Documento</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+              </thead>
+              <tbody id="clientesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="productos" class="page-section">
+        <div class="section-toolbar">
+          <div>
+            <h3>Productos</h3>
+            <p>Catálogo, precio y disponibilidad.</p>
+          </div>
+          <button class="btn btn-primary" id="btnNuevoProducto">+ Nuevo producto</button>
+        </div>
+
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Producto</th>
+                <th>Categoría</th>
+                <th>Material / color</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+              </thead>
+              <tbody id="productosBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="pedidos" class="page-section">
+        <div class="section-toolbar">
+          <div>
+            <h3>Pedidos</h3>
+            <p>Crea pedidos y controla su estado.</p>
+          </div>
+          <button class="btn btn-primary" id="btnNuevoPedido">+ Nuevo pedido</button>
+        </div>
+
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Detalle</th>
+                <th>Total</th>
+                <th>Acciones</th>
+              </tr>
+              </thead>
+              <tbody id="pedidosBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="simulador" class="page-section">
+        <div class="section-toolbar">
+          <div>
+            <h3>Interpretación inteligente de mensajes</h3>
+            <p>Analiza mensajes reales con IA usando el catálogo actual de Pao Collection.</p>
+          </div>
+          <span class="badge badge-neutral">IA real</span>
+        </div>
+
+        <div class="ai-layout">
+          <div class="panel ai-chat-panel">
+            <div class="panel-header">
+              <div>
+                <h3>Mensaje del cliente</h3>
+                <p>Selecciona un cliente y escribe una solicitud en lenguaje natural.</p>
+              </div>
+            </div>
+
+            <div class="ai-form">
+              <label class="field">
+                <span>Cliente</span>
+                <select id="iaCliente"></select>
+              </label>
+
+              <label class="field">
+                <span>Mensaje simulado de WhatsApp</span>
+                <textarea id="iaMensaje" rows="6"
+                  placeholder="Ejemplo: Hola, quisiera 2 pulseras doradas y 1 collar"></textarea>
+              </label>
+
+              <div class="example-messages">
+                <button type="button" class="example-chip"
+                  data-example="Hola, quisiera 2 pulseras doradas">
+                  2 pulseras doradas
+                </button>
+                <button type="button" class="example-chip"
+                  data-example="Quiero comprar 1 collar dorado">
+                  Comprar 1 collar
+                </button>
+              </div>
+
+              <button type="button" class="btn btn-primary" id="btnAnalizarIa">
+                Analizar mensaje
+              </button>
+            </div>
+          </div>
+
+          <div class="panel ai-result-panel">
+            <div class="panel-header">
+              <div>
+                <h3>Interpretación</h3>
+                <p>Resultado estructurado antes de registrar el pedido.</p>
+              </div>
+            </div>
+
+            <div id="iaEmpty" class="ai-empty">
+              Escribe un mensaje y presiona <strong>Analizar mensaje</strong>.
+            </div>
+
+            <div id="iaResultado" class="hidden">
+              <div class="ai-meta-grid">
+                <div>
+                  <span>Intención</span>
+                  <strong id="iaIntencion">-</strong>
+                </div>
+                <div>
+                  <span>Total estimado</span>
+                  <strong id="iaTotal">S/ 0.00</strong>
+                </div>
+                <div>
+                  <span>Revisión manual</span>
+                  <strong id="iaRevision">-</strong>
+                </div>
+              </div>
+
+              <div class="ai-block">
+                <h4>Productos detectados</h4>
+                <div id="iaItems"></div>
+              </div>
+
+              <div class="ai-block">
+                <h4>Observaciones</h4>
+                <ul id="iaObservaciones" class="ai-observations"></ul>
+              </div>
+
+              <div class="ai-response">
+                <span>Respuesta sugerida</span>
+                <p id="iaRespuesta"></p>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="btnLimpiarIa">
+                  Limpiar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarIa" disabled>
+                  Confirmar y crear pedido
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="simulator-note">
+          <strong>Importante:</strong>
+          la interpretación ya utiliza un modelo de IA real. La conexión con WhatsApp Business
+          todavía se implementará en la siguiente etapa.
+        </div>
+      </section>
+
+
+      <section id="instagram" class="page-section">
+        <div class="section-toolbar">
+          <div>
+            <h3>Instagram Direct</h3>
+            <p>Conecta mensajes de clientes con la IA y el proceso de pedidos.</p>
+          </div>
+          <button class="btn btn-secondary" id="btnActualizarInstagram">
+            Actualizar
+          </button>
+        </div>
+
+        <div class="cards-grid">
+          <article class="stat-card">
+            <span class="stat-label">Configuración</span>
+            <strong id="igConfigurado">Pendiente</strong>
+            <small id="igConfiguradoDetalle">Revisando variables...</small>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-label">Graph API</span>
+            <strong id="igGraphVersion">-</strong>
+            <small>Versión configurada</small>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-label">Contactos</span>
+            <strong id="igContactosCount">0</strong>
+            <small>IGSID recibidos</small>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-label">Conversaciones</span>
+            <strong id="igConversacionesCount">0</strong>
+            <small>Últimos registros</small>
+          </article>
+        </div>
+
+        <article class="panel ig-account" id="igCuenta" aria-labelledby="igCuentaTitulo" aria-busy="true">
+          <div class="panel-header">
+            <h3 id="igCuentaTitulo">Cuenta profesional conectada</h3>
+            <span class="badge badge-neutral" id="igCuentaEstado" role="status">Verificando…</span>
+          </div>
+          <div class="ig-account-body">
+            <div class="ig-account-avatar">
+              <span id="igCuentaAvatar" aria-label="Sin foto de perfil">IG</span>
+              <img id="igCuentaFoto" alt="Foto de perfil de la cuenta profesional" width="88" height="88" referrerpolicy="no-referrer" hidden>
+            </div>
+            <div id="igCuentaDetalle" hidden>
+              <h4 id="igCuentaUsername"></h4>
+              <p id="igCuentaNombre"></p>
+              <p class="ig-account-id">ID de Instagram: <code id="igCuentaId"></code></p>
+            </div>
+          </div>
+          <p id="igCuentaMensaje" class="ig-account-message" aria-live="polite">Consultando la cuenta profesional en Instagram…</p>
+        </article>
+
+        <div class="panel instagram-flow-panel">
+          <div class="panel-header">
+            <div>
+              <h3>Flujo de venta</h3>
+              <p>El pedido solo se registra después de la confirmación del cliente.</p>
+            </div>
+            <span id="igBadge" class="badge badge-warning">
+              Pendiente de Meta
+            </span>
+          </div>
+
+          <div class="ig-flow">
+            <span>Instagram DM</span>
+            <b>→</b>
+            <span>Webhook</span>
+            <b>→</b>
+            <span>IA</span>
+            <b>→</b>
+            <span>Propuesta</span>
+            <b>→</b>
+            <span>CONFIRMAR</span>
+            <b>→</b>
+            <span>Pedido + stock</span>
+          </div>
+        </div>
+
+        <div class="panel instagram-contacts-panel">
+          <div class="panel-header">
+            <div>
+              <h3>Contactos de Instagram</h3>
+              <p>Vincula cada IGSID con un cliente del sistema para habilitar pedidos.</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>IGSID</th>
+                  <th>Referencia</th>
+                  <th>Cliente vinculado</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="instagramContactosBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Conversaciones recientes</h3>
+              <p>Mensajes recibidos mediante el webhook de Instagram.</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Cliente</th>
+                  <th>Mensaje</th>
+                  <th>Respuesta</th>
+                  <th>Estado</th>
+                  <th>Pedido</th>
+                </tr>
+              </thead>
+              <tbody id="instagramConversacionesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="clienteModal">
+    <div class="modal">
+      <button class="modal-close" data-close="clienteModal">×</button>
+      <h3 id="clienteModalTitle">Nuevo cliente</h3>
+      <form id="clienteForm" class="form-grid">
+        <input type="hidden" id="clienteId">
+
+        <label class="field field-full">
+          <span>Nombres</span>
+          <input id="clienteNombres" required maxlength="100">
+        </label>
+
+        <label class="field">
+          <span>Documento</span>
+          <input id="clienteDocumento" required maxlength="20">
+        </label>
+
+        <label class="field">
+          <span>Teléfono</span>
+          <input id="clienteTelefono" maxlength="20">
+        </label>
+
+        <label class="field field-full">
+          <span>Email</span>
+          <input id="clienteEmail" type="email" maxlength="100">
+        </label>
+
+        <div class="modal-actions field-full">
+          <button type="button" class="btn btn-secondary" data-close="clienteModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="productoModal">
+    <div class="modal">
+      <button class="modal-close" data-close="productoModal">×</button>
+      <h3 id="productoModalTitle">Nuevo producto</h3>
+      <form id="productoForm" class="form-grid">
+        <input type="hidden" id="productoId">
+
+        <label class="field field-full">
+          <span>Nombre</span>
+          <input id="productoNombre" required maxlength="120">
+        </label>
+
+        <label class="field field-full">
+          <span>Descripción</span>
+          <textarea id="productoDescripcion" maxlength="300"></textarea>
+        </label>
+
+        <label class="field">
+          <span>Categoría</span>
+          <select id="productoCategoria">
+            <option value="">Seleccione</option>
+            <option value="Pulsera">Pulsera</option>
+            <option value="Collar">Collar</option>
+            <option value="Aretes">Aretes</option>
+            <option value="Anillo">Anillo</option>
+            <option value="Dije">Dije</option>
+            <option value="Tobillera">Tobillera</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Material</span>
+          <input id="productoMaterial" maxlength="80"
+                 placeholder="Ej. acero inoxidable">
+        </label>
+
+        <label class="field">
+          <span>Color / acabado</span>
+          <input id="productoColor" maxlength="50"
+                 placeholder="Ej. dorado">
+        </label>
+
+        <label class="field">
+          <span>URL de imagen</span>
+          <input id="productoImagenUrl" maxlength="500"
+                 placeholder="Opcional">
+        </label>
+
+        <label class="field">
+          <span>Precio</span>
+          <input id="productoPrecio" type="number" min="0" step="0.01" required>
+        </label>
+
+        <label class="field">
+          <span>Stock</span>
+          <input id="productoStock" type="number" min="0" step="1" required>
+        </label>
+
+        <div class="modal-actions field-full">
+          <button type="button" class="btn btn-secondary" data-close="productoModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="pedidoModal">
+    <div class="modal modal-large">
+      <button class="modal-close" data-close="pedidoModal">×</button>
+      <h3>Nuevo pedido</h3>
+
+      <form id="pedidoForm">
+        <label class="field">
+          <span>Cliente</span>
+          <select id="pedidoCliente" required></select>
+        </label>
+
+        <div class="order-builder">
+          <div class="order-builder-head">
+            <h4>Productos</h4>
+            <button type="button" class="btn btn-secondary" id="btnAgregarItem">+ Agregar producto</button>
+          </div>
+          <div id="pedidoItems"></div>
+        </div>
+
+        <div class="order-total">
+          <span>Total estimado</span>
+          <strong id="pedidoTotalEstimado">S/ 0.00</strong>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close="pedidoModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Registrar pedido</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
