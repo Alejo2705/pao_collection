@@ -654,11 +654,12 @@ function renderInterpretacionIa(resultado) {
     resultado.respuestaSugerida || "-";
 
   document.getElementById("btnConfirmarIa").disabled =
-    resultado.requiereRevision || !(resultado.items || []).length;
+    resultado.requiereRevision || resultado.intencion !== "CREAR_PEDIDO" || !(resultado.items || []).length;
 }
 
 async function confirmarPedidoIa() {
-  if (!ultimaInterpretacion) return;
+  if (!ultimaInterpretacion || ultimaInterpretacion.requiereRevision
+      || ultimaInterpretacion.intencion !== "CREAR_PEDIDO") return;
 
   const body = {
     clienteId: ultimaInterpretacion.clienteId,
