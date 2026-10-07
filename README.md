@@ -100,3 +100,8 @@ de Instagram y no requieren iniciar la aplicación ni conectar MySQL.
 
 Referencias: [Java en Railpack](https://railpack.com/languages/java/) y
 [configuración de builds Railway](https://docs.railway.com/builds/build-configuration).
+
+
+### Página pública de Pao Collection
+
+La landing está disponible en `/pao-collection.html` (en producción: https://paocollection.up.railway.app/pao-collection.html). Solo esta página y su CSS son públicos; el panel `/` y sus APIs conservan autenticación. El contacto comercial se dirige a Instagram.

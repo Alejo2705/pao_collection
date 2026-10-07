@@ -46,7 +46,7 @@ public class SecurityConfig {
         var entryPoint = new org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint(entryPoints);
         entryPoint.setDefaultEntryPoint(new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login.html"));
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.GET, "/login.html", "/login.js", "/auth/csrf",
+                .requestMatchers(HttpMethod.GET, "/pao-collection.html", "/landing.css", "/login.html", "/login.js", "/auth/csrf",
                         "/styles.css", "/img/logo-pao-collection.jpg",
                         "/politica-privacidad.html", "/eliminacion-datos.html",
                         "/api/instagram/webhook").permitAll()

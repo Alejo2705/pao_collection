@@ -41,6 +41,9 @@ class SecurityConfigTest {
 
     @Test @Order(2)
     void publicPagesAndCsrfRemainAccessible() throws Exception {
+        mvc.perform(get("/pao-collection.html")).andExpect(status().isOk());
+        mvc.perform(get("/landing.css")).andExpect(status().isOk());
+        mvc.perform(get("/index.html")).andExpect(status().is3xxRedirection());
         mvc.perform(get("/login.html")).andExpect(status().isOk());
         mvc.perform(get("/politica-privacidad.html")).andExpect(status().isOk());
         mvc.perform(get("/eliminacion-datos.html")).andExpect(status().isOk());
