@@ -57,7 +57,7 @@ class InterpretacionPedidoServiceTest {
                 List.of(producto(1, "PULOT", "PULSERA OJO TIGRE HILO", "35")));
         assertFalse(r.isRequiereRevision()); assertEquals(new BigDecimal("70"), r.getTotalEstimado());
         assertEquals("PULSERA OJO TIGRE HILO", r.getItems().get(0).getNombreProducto());
-        assertTrue(r.getRespuestaSugerida().contains("PULSERA OJO TIGRE HILO"));
+        assertTrue(r.getRespuestaSugerida().contains("pulsera ojo tigre hilo"));
         assertFalse(r.getRespuestaSugerida().contains("PULOT"));
     }
 
@@ -102,4 +102,35 @@ class InterpretacionPedidoServiceTest {
                 List.of(producto(1, "PULOT", "PULSERA OJO TIGRE HILO", "35")));
         assertTrue(r.isRequiereRevision()); assertTrue(r.getItems().isEmpty());
     }
+    @Test void respuestaDeCompraNoAfirmaReservaSinConfirmacion() {
+        var r = interpretar("Hola, me separas dos pulseritas?", "CREAR_PEDIDO", 1, 2,
+                List.of(producto(1, "PULOT", "PULSERA OJO TIGRE HILO", "35")));
+        assertTrue(r.getRespuestaSugerida().contains("Antes de separarlo"));
+        assertTrue(r.getRespuestaSugerida().contains("S/ 70.00"));
+        assertFalse(r.getRespuestaSugerida().contains("Identifiqué"));
+        assertFalse(r.getRespuestaSugerida().contains("Cliente prueba"));
+    }
+
+    @Test void consultaDeRegaloNoVuelveAPreguntarSiEsRegalo() {
+        var r = interpretar("Hola, cuánto cuesta el collar para un regalo?", "CONSULTA_PRODUCTO", 1, 1,
+                List.of(producto(1, "COLL", "COLLAR ACERO OSO", "49")));
+        assertTrue(r.getRespuestaSugerida().contains("para tu regalo"));
+        assertFalse(r.getRespuestaSugerida().contains("¿Es para ti"));
+    }
+
+    @Test void stockInsuficienteOfreceCantidadRealSinPrometerEntrega() {
+        var r = interpretar("Quiero seis pulseras", "CREAR_PEDIDO", 1, 6,
+                List.of(producto(1, "PULOT", "PULSERA OJO TIGRE HILO", "35")));
+        assertTrue(r.getRespuestaSugerida().contains("nos quedan 5 unidades"));
+        assertTrue(r.getRespuestaSugerida().contains("cantidad disponible"));
+        assertTrue(r.isRequiereRevision());
+    }
+
+    @Test void productoAgotadoNoSeOfreceComoDisponible() {
+        var p = producto(1, "COLL", "COLLAR ACERO OSO", "49"); p.setStock(0);
+        var r = interpretar("Tienes el collar del oso?", "CONSULTA_PRODUCTO", 1, 1, List.of(p));
+        assertTrue(r.getRespuestaSugerida().contains("no tenemos unidades disponibles"));
+        assertFalse(r.getRespuestaSugerida().contains("sí está disponible"));
+    }
+
 }

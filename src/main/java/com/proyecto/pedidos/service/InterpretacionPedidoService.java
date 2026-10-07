@@ -381,6 +381,7 @@ public class InterpretacionPedidoService {
 
         String respuestaSugerida = construirRespuesta(
                 cliente,
+                mensajeOriginal,
                 intencion,
                 items,
                 total,
@@ -403,40 +404,73 @@ public class InterpretacionPedidoService {
 
     private String construirRespuesta(
             Cliente cliente,
+            String mensaje,
             String intencion,
             List<ItemInterpretadoResponse> items,
             BigDecimal total,
             boolean requiereRevision,
             String aclaracion) {
 
-        if (requiereRevision) {
-            if (aclaracion != null && !aclaracion.isBlank()) {
-                return "Hola " + cliente.getNombres() + ". " + aclaracion;
-            }
+        String texto = normalizar(mensaje);
+        boolean regalo = texto.contains("regal");
+        boolean saluda = texto.matches("^(hola|buenas|buenos|buen).*" );
+        String saludo = saluda ? "¡Hola! 😊 " : "";
 
-            return "Hola " + cliente.getNombres()
-                    + ". Entendí tu mensaje, pero necesito revisar algunos detalles "
-                    + "antes de confirmar el pedido.";
+        if (requiereRevision) {
+            List<ItemInterpretadoResponse> faltantes = items.stream()
+                    .filter(i -> i.getCantidad() > i.getStockDisponible()).toList();
+            if (!faltantes.isEmpty()) {
+                String disponibles = faltantes.stream().map(i -> {
+                    String nombre = nombreConversacional(i.getNombreProducto());
+                    if (i.getStockDisponible() == 0) {
+                        return "Por ahora no tenemos unidades disponibles de " + nombre;
+                    }
+                    return "De " + nombre + " nos quedan " + i.getStockDisponible()
+                            + (i.getStockDisponible() == 1 ? " unidad" : " unidades");
+                }).collect(Collectors.joining(". "));
+                return saludo + disponibles + ". "
+                        + (faltantes.stream().allMatch(i -> i.getStockDisponible() > 0)
+                        ? "¿Te gustaría llevar la cantidad disponible?"
+                        : "¿Te gustaría que te ayudemos a elegir otro modelo?");
+            }
+            if (aclaracion != null && !aclaracion.isBlank()) {
+                return saludo + "Te ayudo a elegir. " + aclaracion;
+            }
+            return saludo + "Te ayudo con gusto. ¿Me cuentas un poquito más sobre el modelo "
+                    + "que buscas? También puedes enviarnos una foto para identificarlo.";
         }
 
         if ("CONSULTA_PRODUCTO".equals(intencion)) {
-            return "Hola " + cliente.getNombres() + ". " + items.stream()
-                    .map(item -> item.getNombreProducto() + ": S/ "
-                            + item.getPrecio().setScale(2)
-                            + ", " + item.getStockDisponible() + " disponibles")
-                    .collect(Collectors.joining("; ")) + ". ¿Te gustaría pedir alguno?";
+            String opciones = items.stream().map(i -> nombreConversacional(i.getNombreProducto())
+                    + " está a S/ " + i.getPrecio().setScale(2)
+                    + (i.getStockDisponible() > 0 ? " y sí está disponible"
+                    : ", aunque por ahora está agotado"))
+                    .collect(Collectors.joining("; "));
+            boolean disponible = items.stream().anyMatch(i -> i.getStockDisponible() > 0);
+            String cierre = !disponible ? "¿Te ayudo a buscar otro modelo?"
+                    : regalo ? "¿Quieres llevar alguno para tu regalo?"
+                    : texto.contains("precio") || texto.contains("cuanto") || texto.contains("cuesta")
+                    ? "¿Es para ti o estás buscando un regalo?"
+                    : "¿Te gustaría llevar alguno?";
+            return saludo + (items.size() == 1 ? "Te cuento: " : "Estas son las opciones: ")
+                    + opciones + ". " + cierre;
         }
 
         String detalle = items.stream()
-                .map(item ->
-                        item.getCantidad() + " x " + item.getNombreProducto()
-                )
-                .collect(Collectors.joining(", "));
+                .map(i -> i.getCantidad() + (i.getCantidad() == 1 ? " unidad de " : " unidades de ")
+                        + nombreConversacional(i.getNombreProducto()))
+                .collect(Collectors.joining(" y "));
+        String inicio = regalo ? "¡Claro, te ayudo con tu regalo! "
+                : texto.contains("separ") || texto.contains("reserv")
+                ? "¡Claro! Antes de separarlo, confirmamos lo que elegiste: "
+                : "¡Con gusto! Tu pedido sería: ";
+        return saludo + inicio + detalle + ". En total serían S/ " + total.setScale(2)
+                + ". ¿Está bien así para que registremos tu pedido?";
+    }
 
-        return "Hola " + cliente.getNombres()
-                + ". Identifiqué: " + detalle
-                + ". Total estimado: S/ " + total
-                + ". ¿Deseas confirmar tu pedido?";
+    private String nombreConversacional(String nombre) {
+        return nombre.equals(nombre.toUpperCase(Locale.ROOT))
+                ? nombre.toLowerCase(Locale.ROOT) : nombre;
     }
 
     private String normalizarIntencion(String valor) {
