@@ -1,5 +1,33 @@
 # Pao Collection — sistema de pedidos
 
+## Acceso privado
+
+El panel y todas las API de gestión requieren iniciar sesión. Configura en el
+entorno local y en Railway `ADMIN_USERNAME` (por defecto `admin`) y
+`ADMIN_PASSWORD` (mínimo 14 caracteres y máximo 72 bytes UTF-8). Usa una
+contraseña única generada por un gestor de contraseñas. Sin contraseña no se
+crea ningún usuario y el acceso queda cerrado. No guardes estas variables en Git.
+En Railway configura también `SESSION_COOKIE_SECURE=true` para HTTPS;
+solo en desarrollo local con HTTP puede permanecer en `false`.
+
+Las contraseñas se codifican con BCrypt en memoria al arrancar. Para cambiarlas,
+actualiza las variables y redespliega; las sesiones en memoria no sobreviven al
+reinicio. Hay cierre de sesión y caducidad tras 30 minutos sin actividad.
+Las solicitudes que modifican datos, el login y el logout requieren CSRF.
+El login acepta como máximo 10 intentos por minuto por instancia (límite global
+para este panel de un administrador); un bloqueo también puede afectar al
+administrador durante ese minuto. Para varias réplicas se requiere un límite
+centralizado y almacenamiento compartido de sesiones. No hay registro público,
+recuperación automática de contraseña ni autenticación de dos factores.
+
+Solo son públicos el login y sus recursos, el endpoint CSRF, las páginas de
+privacidad/eliminación y el webhook exacto de Instagram. El POST del webhook
+conserva la verificación de firma de Meta; no necesita sesión ni CSRF de navegador.
+
+Antes de desplegar esta versión, guarda las tres variables anteriores en Railway.
+Verifica que un visitante sin sesión vea el login y reciba HTTP 401 en las API,
+y que el acceso autorizado permita guardar y cerrar sesión.
+
 Spring Boot 3.3.0, Java 18 y Maven; MySQL, OpenAI e Instagram.
 
 ## Desarrollo local

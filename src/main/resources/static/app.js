@@ -15,6 +15,27 @@ let pedidos = [];
 let ultimaInterpretacion = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
+  document.getElementById("btnCerrarSesion").addEventListener("click", async () => {
+    try {
+      const csrf = await obtenerCsrf();
+      const response = await fetch("/logout", { method: "POST", headers: { [csrf.headerName]: csrf.token } });
+      if (!response.ok) throw new Error();
+      window.location.assign("/login.html?logout");
+    } catch (_) { mostrarToast("No se pudo cerrar la sesión. Intenta de nuevo.", true); }
+  });
+  document.addEventListener("click", event => {
+    const button = event.target.closest("[data-secure-action]");
+    if (!button) return;
+    const actions = { editarCliente, eliminarCliente, editarProducto, eliminarProducto,
+      vincularInstagram, desvincularInstagram };
+    const action = actions[button.dataset.secureAction];
+    if (action) action(Number(button.dataset.id));
+  });
+  document.addEventListener("change", event => {
+    if (event.target.matches("[data-pedido-estado]")) {
+      cambiarEstadoPedido(Number(event.target.dataset.pedidoEstado), event.target.value);
+    }
+  });
   configurarNavegacion();
   configurarModales();
   configurarFormularios();
@@ -383,8 +404,8 @@ function renderClientes() {
         </td>
         <td>
           <div class="actions">
-            <button class="btn btn-secondary btn-small" onclick="editarCliente(${c.id})">Editar</button>
-            <button class="btn btn-danger btn-small" onclick="eliminarCliente(${c.id})">Eliminar</button>
+            <button class="btn btn-secondary btn-small" data-secure-action="editarCliente" data-id="${c.id}">Editar</button>
+            <button class="btn btn-danger btn-small" data-secure-action="eliminarCliente" data-id="${c.id}">Eliminar</button>
           </div>
         </td>
       </tr>
@@ -430,8 +451,8 @@ function renderProductos() {
         </td>
         <td>
           <div class="actions">
-            <button class="btn btn-secondary btn-small" onclick="editarProducto(${p.id})">Editar</button>
-            <button class="btn btn-danger btn-small" onclick="eliminarProducto(${p.id})">Eliminar</button>
+            <button class="btn btn-secondary btn-small" data-secure-action="editarProducto" data-id="${p.id}">Editar</button>
+            <button class="btn btn-danger btn-small" data-secure-action="eliminarProducto" data-id="${p.id}">Eliminar</button>
           </div>
         </td>
       </tr>
@@ -457,7 +478,7 @@ function renderPedidos() {
           <td>${detalle || "-"}</td>
           <td><strong>${moneda(p.total)}</strong></td>
           <td>
-            <select class="estado-select" onchange="cambiarEstadoPedido(${p.id}, this.value)">
+            <select class="estado-select" data-pedido-estado="${p.id}">
               ${["PENDIENTE", "CONFIRMADO", "EN_PROCESO", "COMPLETADO", "CANCELADO"]
                 .map(e => `<option value="${e}" ${e === p.estado ? "selected" : ""}>${e.replace("_", " ")}</option>`)
                 .join("")}
@@ -819,12 +840,12 @@ async function cargarInstagram() {
               <td>
                 <div class="actions">
                   <button class="btn btn-primary btn-small"
-                    onclick="vincularInstagram(${c.id})">
+                    data-secure-action="vincularInstagram" data-id="${c.id}">
                     Guardar vínculo
                   </button>
                   ${c.clienteId ? `
                     <button class="btn btn-danger btn-small"
-                      onclick="desvincularInstagram(${c.id})">
+                      data-secure-action="desvincularInstagram" data-id="${c.id}">
                       Quitar
                     </button>
                   ` : ""}
@@ -914,13 +935,20 @@ function badgeInstagramEstado(estado) {
 
 
 async function apiFetch(url, options = {}) {
+  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+  if (!["GET", "HEAD", "OPTIONS"].includes((options.method || "GET").toUpperCase())) {
+    const csrf = await obtenerCsrf();
+    headers[csrf.headerName] = csrf.token;
+  }
   const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {})
-    },
-    ...options
+    ...options,
+    headers
   });
+
+  if (response.status === 401) {
+    window.location.assign("/login.html");
+    throw new Error("Tu sesión terminó. Inicia sesión nuevamente.");
+  }
 
   if (!response.ok) {
     let mensaje = `Error HTTP ${response.status}`;
@@ -937,6 +965,12 @@ async function apiFetch(url, options = {}) {
 
   const text = await response.text();
   return text ? JSON.parse(text) : null;
+}
+
+async function obtenerCsrf() {
+  const response = await fetch("/auth/csrf", { cache: "no-store", credentials: "same-origin" });
+  if (!response.ok) throw new Error("No se pudo preparar la solicitud segura.");
+  return response.json();
 }
 
 function badgeEstado(estado) {

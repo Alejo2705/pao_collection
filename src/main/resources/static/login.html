@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar sesión | Pao Collection</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/login.js" defer></script>
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <img src="/img/logo-pao-collection.jpg" alt="Pao Collection" class="brand-logo">
+    <p class="eyebrow">Pao Collection</p>
+    <h1>Iniciar sesión</h1>
+    <p>Acceso privado al sistema de pedidos.</p>
+    <p id="loginMessage" role="status" aria-live="polite"></p>
+    <form id="loginForm" action="/login" method="post">
+      <input id="csrfToken" type="hidden">
+      <label for="username">Usuario</label>
+      <input id="username" name="username" autocomplete="username" required maxlength="100">
+      <label for="password">Contraseña</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button id="loginButton" type="submit" class="btn btn-primary" disabled>Ingresar</button>
+    </form>
+    <a href="/politica-privacidad.html">Privacidad</a> · <a href="/eliminacion-datos.html">Eliminación de datos</a>
+  </main>
+</body>
+</html>
