@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="/styles.css">
-</head>
+<link rel="stylesheet" href="/chat.css"></head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
@@ -28,7 +28,8 @@
         <button class="nav-item" data-section="productos">Productos</button>
         <button class="nav-item" data-section="pedidos">Pedidos</button>
         <button class="nav-item" data-section="simulador">Asistente IA</button>
-        <button class="nav-item" data-section="instagram">Instagram</button>
+        <button class="nav-item" data-section="chat-web">Chat web</button>
+        <button class="nav-item" data-section="instagram">Instagram (integración)</button>
       </nav>
 
       <div class="sidebar-footer">
@@ -299,7 +300,8 @@
       </section>
 
 
-      <section id="instagram" class="page-section">
+      <section id="chat-web" class="page-section"><div class="section-header"><div><h2>Conversaciones del chat web</h2><p>Consultas y pedidos recibidos desde la página pública.</p></div><button class="btn btn-primary" id="btnActualizarChatWeb" type="button">Actualizar</button></div><p><a href="/pao-collection.html#asistente" target="_blank" rel="noopener">Abrir asistente para clientes ↗</a></p><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Cliente</th><th>Teléfono</th><th>Conversación</th><th>Pedido</th></tr></thead><tbody id="chatWebBody"></tbody></table></div></section>
+<section id="instagram" class="page-section">
         <div class="section-toolbar">
           <div>
             <h3>Instagram Direct</h3>

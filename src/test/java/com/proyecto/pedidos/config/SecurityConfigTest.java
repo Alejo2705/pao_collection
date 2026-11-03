@@ -37,12 +37,17 @@ class SecurityConfigTest {
                 .andExpect(redirectedUrlPattern("**/login.html"));
         mvc.perform(get("/app.js")).andExpect(status().is3xxRedirection());
         mvc.perform(get("/api/instagram/status")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/chat/admin/conversaciones")).andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/chat/confirmar")).andExpect(status().isForbidden());
+        mvc.perform(post("/api/chat/mensajes")).andExpect(status().isForbidden());
     }
 
     @Test @Order(2)
     void publicPagesAndCsrfRemainAccessible() throws Exception {
         mvc.perform(get("/pao-collection.html")).andExpect(status().isOk());
         mvc.perform(get("/landing.css")).andExpect(status().isOk());
+        mvc.perform(get("/chat.js")).andExpect(status().isOk());
+        mvc.perform(get("/chat.css")).andExpect(status().isOk());
         mvc.perform(get("/index.html")).andExpect(status().is3xxRedirection());
         mvc.perform(get("/login.html")).andExpect(status().isOk());
         mvc.perform(get("/politica-privacidad.html")).andExpect(status().isOk());

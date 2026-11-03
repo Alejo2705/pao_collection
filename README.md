@@ -105,3 +105,11 @@ Referencias: [Java en Railpack](https://railpack.com/languages/java/) y
 ### Página pública de Pao Collection
 
 La landing está disponible en `/pao-collection.html` (en producción: https://paocollection.up.railway.app/pao-collection.html). Solo esta página y su CSS son públicos; el panel `/` y sus APIs conservan autenticación. El contacto comercial se dirige a Instagram.
+
+
+### Atención y pedidos con chat web
+El canal principal público está en `/pao-collection.html#asistente`. No requiere Meta ni alta previa de cliente. Necesita las variables de OpenAI ya existentes. Consultas y propuestas no modifican stock. Solo el botón Confirmar pedido, con nombre, teléfono y consentimiento, crea un cliente WEB y un pedido pendiente. No verifica la titularidad del teléfono ni cobra pagos: el negocio debe coordinar la atención.
+
+Las conversaciones se guardan en `web_chats`; Hibernate crea la tabla sin borrar las existentes. La cookie HttpSession da acceso únicamente a la conversación propia; tras 30 minutos de inactividad o un despliegue se necesita nueva sesión. El panel Chat web muestra las 100 conversaciones más recientes a administradores. Instagram se conserva como integración opcional.
+
+Seguridad: endpoints públicos limitados explícitamente, CSRF obligatorio, 1000 caracteres por mensaje, 8 operaciones/minuto por sesión y 40/minuto globales por instancia. Recomendado un solo réplica mientras las sesiones sean en memoria. Propuestas vencen en 15 minutos, precio y stock se revalidan con bloqueo transaccional, y reintentar confirmación devuelve el mismo pedido. El historial se guarda para atención; revisar periódicamente solicitudes de eliminación y la política de conservación del negocio.

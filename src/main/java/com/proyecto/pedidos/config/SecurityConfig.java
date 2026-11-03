@@ -46,10 +46,11 @@ public class SecurityConfig {
         var entryPoint = new org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint(entryPoints);
         entryPoint.setDefaultEntryPoint(new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login.html"));
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.GET, "/pao-collection.html", "/landing.css", "/login.html", "/login.js", "/auth/csrf",
+                .requestMatchers(HttpMethod.GET, "/pao-collection.html", "/landing.css", "/chat.css", "/chat.js", "/api/chat/sesion", "/login.html", "/login.js", "/auth/csrf",
                         "/styles.css", "/img/logo-pao-collection.jpg",
                         "/politica-privacidad.html", "/eliminacion-datos.html",
                         "/api/instagram/webhook").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/chat/mensajes", "/api/chat/confirmar", "/api/chat/nueva").permitAll()
                 .requestMatchers(webhook).permitAll()
                 .anyRequest().hasRole("ADMIN"))
             .csrf(csrf -> csrf.ignoringRequestMatchers(webhook))
@@ -67,6 +68,7 @@ public class SecurityConfig {
                     "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                     "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; " +
                     "connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")))
+            .addFilterBefore(new WebChatRateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new LoginRateLimitFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

@@ -116,6 +116,15 @@ public class InterpretacionPedidoService {
         );
     }
 
+    /** Public visitors do not need a customer record until they confirm an order. */
+    public InterpretacionMensajeResponse interpretarPublico(String mensaje) {
+        Cliente visitante = new Cliente(); visitante.setNombres("Visitante web");
+        List<Producto> catalogo = productoRepository.findAll().stream()
+                .filter(p -> !Boolean.FALSE.equals(p.getActivo()) && p.getDescripcion()!=null && !p.getDescripcion().isBlank()).toList();
+        if(catalogo.isEmpty()) throw new NegocioException("El catálogo no está disponible en este momento.");
+        return validarYConvertir(visitante, mensaje, catalogo, consultarModelo(mensaje,catalogo));
+    }
+
     private void validarRequest(InterpretarMensajeRequest request) {
 
         if (request.getClienteId() == null) {

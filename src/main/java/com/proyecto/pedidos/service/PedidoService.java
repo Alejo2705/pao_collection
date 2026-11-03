@@ -73,7 +73,7 @@ public class PedidoService {
 
         BigDecimal totalPedido = BigDecimal.ZERO;
 
-        for (ItemPedidoRequest item : request.getItems()) {
+        for (ItemPedidoRequest item : request.getItems().stream().sorted(java.util.Comparator.comparing(ItemPedidoRequest::getProductoId, java.util.Comparator.nullsFirst(Long::compareTo))).toList()) {
 
             if (item.getCantidad() == null || item.getCantidad() <= 0) {
                 throw new NegocioException(
@@ -82,7 +82,7 @@ public class PedidoService {
             }
 
             Producto producto = productoRepository
-                    .findById(item.getProductoId())
+                    .findByIdForUpdate(item.getProductoId())
                     .orElseThrow(() ->
                             new RecursoNoEncontradoException(
                                     "Producto no encontrado con id: "
