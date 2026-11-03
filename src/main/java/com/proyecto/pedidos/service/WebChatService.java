@@ -42,7 +42,7 @@ public class WebChatService {
         try{return json.writeValueAsString(valor);}catch(Exception e){throw new IllegalStateException(e);}
     }
     private Estado vista(WebChat c) {
-        boolean vigente=c.getPedidoId()==null && c.getVencePropuesta()!=null && c.getVencePropuesta().isAfter(LocalDateTime.now());
+        boolean vigente=c.getPedidoId()==null && c.getVencePropuesta()!=null && c.getVencePropuesta().isAfter(LocalDateTime.now(java.time.ZoneOffset.UTC));
         return new Estado(historial(c),vigente?oferta(c):List.of(),c.getPedidoId(),vigente && c.getPropuesta()!=null);
     }
     @Transactional(readOnly=true)
@@ -65,10 +65,10 @@ public class WebChatService {
         if("OTRO".equals(r.getIntencion()))respuesta="¡Hola! 😊 Soy el asistente de Pao Collection. Cuéntame qué accesorio buscas o para quién es el regalo y te ayudo a elegir entre nuestros productos.";
         if("CREAR_PEDIDO".equals(r.getIntencion()) && !r.isRequiereRevision() && !r.getItems().isEmpty()) {
             List<Oferta> oferta=r.getItems().stream().map(i->new Oferta(i.getProductoId(),i.getNombreProducto(),i.getCantidad(),i.getPrecio(),i.getSubtotal())).toList();
-            c.setPropuesta(escribir(oferta));c.setVencePropuesta(LocalDateTime.now().plusMinutes(15));
+            c.setPropuesta(escribir(oferta));c.setVencePropuesta(LocalDateTime.now(java.time.ZoneOffset.UTC).plusMinutes(15));
             respuesta+=" Revisa el resumen y usa «Confirmar pedido» cuando estés listo. Todavía no se ha registrado ni descontado stock.";
         }
-        h.add(new Linea("asistente",respuesta));c.setHistorial(escribir(h));c.setActualizado(LocalDateTime.now());chats.save(c);
+        h.add(new Linea("asistente",respuesta));c.setHistorial(escribir(h));c.setActualizado(LocalDateTime.now(java.time.ZoneOffset.UTC));chats.save(c);
         return vista(c);
     }
 
@@ -79,7 +79,7 @@ public class WebChatService {
         if(c.getPedidoId()!=null)return vista(c);
         if(nombre==null || nombre.trim().length()<2 || nombre.trim().length()>100 || telefono==null || !telefono.matches("\\+?[0-9 ()-]{7,20}") || !consentimiento)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Indica tu nombre, un teléfono válido y acepta el uso de tus datos para gestionar este pedido.");
-        if(c.getVencePropuesta()==null || c.getVencePropuesta().isBefore(LocalDateTime.now()) || oferta(c).isEmpty())throw error("La propuesta venció. Pide un nuevo resumen para actualizar precio y stock.");
+        if(c.getVencePropuesta()==null || c.getVencePropuesta().isBefore(LocalDateTime.now(java.time.ZoneOffset.UTC)) || oferta(c).isEmpty())throw error("La propuesta venció. Pide un nuevo resumen para actualizar precio y stock.");
         List<Oferta> ofertas=oferta(c).stream().sorted(Comparator.comparing(Oferta::productoId)).toList();
         for(var o:ofertas) {
             var p=productos.findByIdForUpdate(o.productoId()).orElseThrow(()->error("Un producto ya no está disponible. Pide otro resumen."));
@@ -90,13 +90,13 @@ public class WebChatService {
         cliente.setDocumento("WEB-"+id.replace("-","").substring(0,16));cliente=clientes.save(cliente);
         CrearPedidoRequest req=new CrearPedidoRequest();req.setClienteId(cliente.getId());req.setItems(ofertas.stream().map(o->{var i=new ItemPedidoRequest();i.setProductoId(o.productoId());i.setCantidad(o.cantidad());return i;}).toList());
         Pedido pedido=pedidos.crear(req);
-        c.setPedidoId(pedido.getId());c.setNombre(nombre.trim());c.setTelefono(telefono.trim());c.setConsentimiento(LocalDateTime.now());c.setActualizado(LocalDateTime.now());
+        c.setPedidoId(pedido.getId());c.setNombre(nombre.trim());c.setTelefono(telefono.trim());c.setConsentimiento(LocalDateTime.now(java.time.ZoneOffset.UTC));c.setActualizado(LocalDateTime.now(java.time.ZoneOffset.UTC));
         var h=historial(c);h.add(new Linea("asistente","¡Gracias, "+nombre.trim()+"! Tu pedido #"+pedido.getId()+" quedó registrado por S/ "+pedido.getTotal().toPlainString()+" y está pendiente de atención. El negocio usará el teléfono que indicaste para coordinar contigo. No se ha realizado ningún cobro."));
         c.setHistorial(escribir(h));chats.save(c);return vista(c);
     }
     @Transactional(readOnly=true)
     public List<Map<String,Object>> recientes() {
         return chats.findTop100ByOrderByActualizadoDesc().stream().map(c->{Map<String,Object> m=new LinkedHashMap<>();
-            m.put("fecha",c.getActualizado());m.put("nombre",c.getNombre());m.put("telefono",c.getTelefono());m.put("pedidoId",c.getPedidoId());m.put("mensajes",historial(c));return m;}).toList();
+            m.put("fecha",c.getActualizado().atOffset(java.time.ZoneOffset.UTC));m.put("nombre",c.getNombre());m.put("telefono",c.getTelefono());m.put("pedidoId",c.getPedidoId());m.put("mensajes",historial(c));return m;}).toList();
     }
 }

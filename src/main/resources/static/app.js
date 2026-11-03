@@ -1035,6 +1035,6 @@ async function cargarChatWeb() {
   try {
     const chats=await apiFetch('/api/chat/admin/conversaciones');body.replaceChildren();
     if(!chats.length){const row=body.insertRow();const c=row.insertCell();c.colSpan=5;c.textContent='Aún no hay conversaciones web.';}
-    chats.forEach(c=>{const row=body.insertRow();[new Date(c.fecha).toLocaleString('es-PE'),c.nombre||'Visitante',c.telefono||'Sin registrar',c.mensajes.map(m=>(m.rol==='cliente'?'Cliente: ':'Pao: ')+m.texto).join('\n\n'),c.pedidoId?'#'+c.pedidoId:'Sin confirmar'].forEach((v,i)=>{const cell=row.insertCell();cell.textContent=v;if(i===3)cell.className='chat-admin-messages';});});
+    chats.forEach(c=>{const row=body.insertRow();[new Intl.DateTimeFormat('es-PE', {dateStyle:'short', timeStyle:'medium', timeZone:'America/Lima'}).format(new Date(c.fecha)),c.nombre||'Visitante',c.telefono||'Sin registrar',c.mensajes.map(m=>(m.rol==='cliente'?'Cliente: ':'Pao: ')+m.texto).join('\n\n'),c.pedidoId?'#'+c.pedidoId:'Sin confirmar'].forEach((v,i)=>{const cell=row.insertCell();cell.textContent=v;if(i===3)cell.className='chat-admin-messages';});});
   }catch(e){body.replaceChildren();const cell=body.insertRow().insertCell();cell.colSpan=5;cell.textContent='No se pudieron cargar las conversaciones.';}
 }

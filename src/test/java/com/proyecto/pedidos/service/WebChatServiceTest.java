@@ -50,4 +50,11 @@ class WebChatServiceTest {
     @Test void requiereConsentimientoYDatosValidos(){propuesta();assertThrows(ResponseStatusException.class,()->service.confirmar(chat.getId(),"Prueba","999888777",false));assertThrows(ResponseStatusException.class,()->service.confirmar(chat.getId(),"P","x",true));verifyNoInteractions(clientes,pedidos,productos);}
     @Test void noPuedeConfirmarOtraSesion(){when(chats.bloquear("ajena")).thenReturn(Optional.empty());assertThrows(ResponseStatusException.class,()->service.confirmar("ajena","Prueba","999888777",true));verifyNoInteractions(clientes,pedidos,productos);}
     @Test void mensajeInvalidoNoInvocaIa(){assertThrows(ResponseStatusException.class,()->service.mensaje(chat.getId()," "));assertThrows(ResponseStatusException.class,()->service.mensaje(chat.getId(),"x".repeat(1001)));verifyNoInteractions(ia);}
+    @Test void fechaDelPanelIncluyeOffsetUtcSinAlterarRegistrosExistentes(){
+        chat.setActualizado(LocalDateTime.of(2026,11,3,2,25,1));
+        when(chats.findTop100ByOrderByActualizadoDesc()).thenReturn(List.of(chat));
+        var fecha=(java.time.OffsetDateTime)service.recientes().get(0).get("fecha");
+        assertEquals(java.time.ZoneOffset.UTC,fecha.getOffset());
+        assertEquals(LocalDateTime.of(2026,11,2,21,25,1),fecha.atZoneSameInstant(java.time.ZoneId.of("America/Lima")).toLocalDateTime());
+    }
 }
