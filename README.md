@@ -113,3 +113,6 @@ El canal principal público está en `/pao-collection.html#asistente`. No requie
 Las conversaciones se guardan en `web_chats`; Hibernate crea la tabla sin borrar las existentes. La cookie HttpSession da acceso únicamente a la conversación propia; tras 30 minutos de inactividad o un despliegue se necesita nueva sesión. El panel Chat web muestra las 100 conversaciones más recientes a administradores. Instagram se conserva como integración opcional.
 
 Seguridad: endpoints públicos limitados explícitamente, CSRF obligatorio, 1000 caracteres por mensaje, 8 operaciones/minuto por sesión y 40/minuto globales por instancia. Recomendado un solo réplica mientras las sesiones sean en memoria. Propuestas vencen en 15 minutos, precio y stock se revalidan con bloqueo transaccional, y reintentar confirmación devuelve el mismo pedido. El historial se guarda para atención; revisar periódicamente solicitudes de eliminación y la política de conservación del negocio.
+
+
+El panel operativo muestra Dashboard, Clientes, Productos, Pedidos y Chat web. Simulador IA e Instagram están archivados en elementos `template` inertes de index.html; su lógica frontend y backend se conserva, sin inicialización ni consultas automáticas de Instagram. Para reactivarlos se requiere restaurar su navegación, sacar el contenido de los templates e inicializar los módulos en app.js.

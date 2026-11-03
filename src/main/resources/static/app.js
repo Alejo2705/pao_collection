@@ -39,8 +39,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   configurarNavegacion();
   configurarModales();
   configurarFormularios();
-  configurarSimuladorIa();
-  configurarInstagram();
+  // Simulador e Instagram conservados para una futura reactivación; no se inicializan.
   document.getElementById("btnActualizarChatWeb").addEventListener("click", cargarChatWeb);
   void cargarChatWeb();
 
@@ -50,7 +49,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }).format(new Date());
 
   await cargarTodo();
-  await cargarInstagram();
 });
 
 async function cargarTodo() {
@@ -82,6 +80,7 @@ function configurarNavegacion() {
 }
 
 function mostrarSeccion(id) {
+  if (!["dashboard", "clientes", "productos", "pedidos", "chat-web"].includes(id)) return;
   document.querySelectorAll(".page-section").forEach(section => {
     section.classList.toggle("active", section.id === id);
   });
@@ -898,8 +897,7 @@ window.vincularInstagram = async contactoId => {
     );
 
     mostrarToast("Contacto de Instagram vinculado.");
-    await cargarInstagram();
-
+  
   } catch (error) {
     mostrarToast(error.message, true);
   }
@@ -913,8 +911,7 @@ window.desvincularInstagram = async contactoId => {
     );
 
     mostrarToast("Vínculo eliminado.");
-    await cargarInstagram();
-
+  
   } catch (error) {
     mostrarToast(error.message, true);
   }
