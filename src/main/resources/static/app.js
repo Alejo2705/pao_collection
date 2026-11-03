@@ -897,7 +897,8 @@ window.vincularInstagram = async contactoId => {
     );
 
     mostrarToast("Contacto de Instagram vinculado.");
-  
+    await cargarInstagram();
+
   } catch (error) {
     mostrarToast(error.message, true);
   }
@@ -911,7 +912,8 @@ window.desvincularInstagram = async contactoId => {
     );
 
     mostrarToast("Vínculo eliminado.");
-  
+    await cargarInstagram();
+
   } catch (error) {
     mostrarToast(error.message, true);
   }
