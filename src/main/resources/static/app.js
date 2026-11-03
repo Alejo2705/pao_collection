@@ -397,9 +397,7 @@ function renderClientes() {
       <tr>
         <td>#${c.id}</td>
         <td><strong>${escapeHtml(c.nombres)}</strong></td>
-        <td>${escapeHtml(c.documento)}</td>
         <td>${escapeHtml(c.telefono || "-")}</td>
-        <td>${escapeHtml(c.email || "-")}</td>
         <td>${c.activo !== false
           ? `<span class="badge badge-success">Activo</span>`
           : `<span class="badge badge-neutral">Inactivo</span>`}
@@ -412,7 +410,7 @@ function renderClientes() {
         </td>
       </tr>
     `).join("")
-    : filaVacia(7, "No hay clientes registrados.");
+    : filaVacia(5, "No hay clientes registrados.");
 }
 
 function renderProductos() {
