@@ -5,6 +5,8 @@ import com.proyecto.pedidos.dto.ia.*;
 import com.proyecto.pedidos.model.*;
 import com.proyecto.pedidos.repository.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import java.math.BigDecimal;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,13 +25,18 @@ class InterpretacionPedidoServiceTest {
 
     private InterpretacionMensajeResponse interpretar(String mensaje, String intencion,
             long id, int cantidad, List<Producto> catalogo) {
+        return interpretar(mensaje, intencion, id, cantidad, catalogo, "");
+    }
+
+    private InterpretacionMensajeResponse interpretar(String mensaje, String intencion,
+            long id, int cantidad, List<Producto> catalogo, String aclaracion) {
         Cliente cliente = new Cliente(); cliente.setId(1L); cliente.setNombres("Cliente prueba");
         when(clientes.findById(1L)).thenReturn(Optional.of(cliente));
         when(productos.findAll()).thenReturn(catalogo);
         AiItemPedido item = new AiItemPedido(); item.productoId = id;
         item.cantidad = cantidad; item.confianza = .99; item.textoDetectado = mensaje;
         AiInterpretacionPedido ai = new AiInterpretacionPedido();
-        ai.intencion = intencion; ai.items = List.of(item); ai.aclaracion = "";
+        ai.intencion = intencion; ai.items = List.of(item); ai.aclaracion = aclaracion;
         InterpretacionPedidoService service = new InterpretacionPedidoService(null, productos, clientes, "test") {
             @Override AiInterpretacionPedido consultarModelo(String texto, List<Producto> lista) {
                 return ai;
@@ -133,4 +140,42 @@ class InterpretacionPedidoServiceTest {
         assertFalse(r.getRespuestaSugerida().contains("sí está disponible"));
     }
 
+
+    @ParameterizedTest
+    @ValueSource(strings={"Envíame una foto del modelo", "¿Puedes adjuntar una imagen?",
+            "Manda una captura", "Comparte una fotografía por Instagram", "Adjunta el archivo",
+            "Please upload a picture", "Send a photo"})
+    void aclaracionDelModeloNoPuedeOfrecerRecepcionDeImagenes(String aclaracion) {
+        var r=interpretar("Quiero el accesorio que vi", "CONSULTA_PRODUCTO",0,1,
+                List.of(producto(1,"COLL","COLLAR ACERO OSO","49")),aclaracion);
+        assertTrue(r.isRequiereRevision());
+        assertTrue(r.getRespuestaSugerida().contains("por escrito"));
+        assertFalse(r.getRespuestaSugerida().contains(aclaracion));
+    }
+
+    @Test void aclaracionUtilPorTextoSeConserva() {
+        String pregunta="¿Buscas un collar o una pulsera?";
+        var r=interpretar("Busco algo para regalar", "CONSULTA_PRODUCTO",0,1,
+                List.of(producto(1,"COLL","COLLAR ACERO OSO","49")),pregunta);
+        assertTrue(r.getRespuestaSugerida().contains(pregunta));
+    }
+
+    @Test void modelosDuplicadosSeAclaranSoloPorTextoInclusoSiCompartenPrecio() {
+        var catalogo=List.of(producto(1,"7CHK","PULSERA 7 CHAKRAS","25"),
+                producto(2,"P7CH","PULSERA 7 CHAKRAS","25"));
+        for (long id : List.of(0L,1L)) {
+            var r=interpretar("Quiero pulsera 7 chakras", "CREAR_PEDIDO",id,1,catalogo);
+            assertTrue(r.isRequiereRevision());assertTrue(r.getItems().isEmpty());
+            assertTrue(r.getRespuestaSugerida().contains("por escrito"));
+            assertFalse(r.getRespuestaSugerida().contains("foto"));
+            assertFalse(r.getRespuestaSugerida().contains("imagen"));
+        }
+    }
+
+    @Test void productoSinCoincidenciaPideDescripcionEscrita() {
+        var r=interpretar("Quiero el accesorio que vi", "CREAR_PEDIDO",0,1,
+                List.of(producto(1,"COLL","COLLAR ACERO OSO","49")));
+        assertTrue(r.getRespuestaSugerida().contains("por escrito"));
+        assertFalse(r.getRespuestaSugerida().contains("foto"));
+    }
 }

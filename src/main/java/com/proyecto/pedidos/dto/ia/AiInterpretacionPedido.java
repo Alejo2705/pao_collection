@@ -17,7 +17,7 @@ public class AiInterpretacionPedido {
     public boolean requiereRevision;
 
     @JsonPropertyDescription(
-            "Pregunta corta de aclaración para el cliente. "
+            "Pregunta corta de aclaración por texto para el cliente. Nunca solicites fotos, imágenes ni adjuntos. "
             + "Si no hace falta aclarar, devuelve una cadena vacía."
     )
     public String aclaracion;
