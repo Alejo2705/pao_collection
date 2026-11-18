@@ -116,3 +116,5 @@ Seguridad: endpoints públicos limitados explícitamente, CSRF obligatorio, 1000
 
 
 El panel operativo muestra Dashboard, Clientes, Productos, Pedidos y Chat web. Simulador IA e Instagram están archivados en elementos `template` inertes de index.html; su lógica frontend y backend se conserva, sin inicialización ni consultas automáticas de Instagram. Para reactivarlos se requiere restaurar su navegación, sacar el contenido de los templates e inicializar los módulos en app.js.
+
+El chat envía el mensaje actual y el historial como datos separados. Las validaciones de modelos ambiguos se aplican a la solicitud actual; un rechazo explícito descarta la propuesta y el tema anterior para la interpretación, conservando el historial de atención. Se mantiene el contexto para referencias como «dos de esos» y se exige confirmación del resumen vigente.

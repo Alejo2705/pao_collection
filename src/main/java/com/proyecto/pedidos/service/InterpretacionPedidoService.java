@@ -3,6 +3,7 @@ package com.proyecto.pedidos.service;
 import com.openai.client.OpenAIClient;
 import com.openai.models.responses.ResponseCreateParams;
 import com.openai.models.responses.StructuredResponseCreateParams;
+import com.proyecto.pedidos.dto.MensajeConversacion;
 import com.proyecto.pedidos.dto.InterpretacionMensajeResponse;
 import com.proyecto.pedidos.dto.InterpretarMensajeRequest;
 import com.proyecto.pedidos.dto.ItemInterpretadoResponse;
@@ -67,6 +68,19 @@ public class InterpretacionPedidoService {
             15. La aclaración es texto para el cliente: jamás muestres IDs ni códigos
                 internos. Los precios están en soles peruanos: usa S/, nunca $.
                 Si no sabes distinguir los modelos, pide una foto o un detalle del diseño.
+            16. mensajeCliente es la solicitud ACTUAL y tiene prioridad. historialConversacion
+                solo ayuda a resolver referencias como "esa", "dos de esas" o "añade otro".
+                Nunca trates las preguntas del asistente como solicitudes del cliente.
+            17. Si el cliente rechaza un producto o cambia a otro, deja de pedir aclaraciones
+                del anterior. Identifica y responde SOLO sobre el nuevo producto solicitado.
+                Las ambigüedades anteriores no bloquean una consulta nueva y clara.
+            18. No arrastres productos ni cantidades anteriores a una nueva propuesta.
+                Conserva otros productos solo si el cliente pide explícitamente añadirlos
+                o mantenerlos. "Mejor un collar" reemplaza; "añade un collar" agrega.
+            19. Si la referencia actual no permite identificar un producto con seguridad,
+                pide aclaración sin elegir automáticamente un producto antiguo.
+            20. Un rechazo sin una nueva solicitud no expresa intención de compra.
+                No insistas en comprar, elegir ni confirmar el producto rechazado.
             """;
 
     private final OpenAIClient openAIClient;
@@ -118,11 +132,15 @@ public class InterpretacionPedidoService {
 
     /** Public visitors do not need a customer record until they confirm an order. */
     public InterpretacionMensajeResponse interpretarPublico(String mensaje) {
+        return interpretarPublico(mensaje, List.of());
+    }
+
+    public InterpretacionMensajeResponse interpretarPublico(String mensaje, List<MensajeConversacion> historial) {
         Cliente visitante = new Cliente(); visitante.setNombres("Visitante web");
         List<Producto> catalogo = productoRepository.findAll().stream()
                 .filter(p -> !Boolean.FALSE.equals(p.getActivo()) && p.getDescripcion()!=null && !p.getDescripcion().isBlank()).toList();
         if(catalogo.isEmpty()) throw new NegocioException("El catálogo no está disponible en este momento.");
-        return validarYConvertir(visitante, mensaje, catalogo, consultarModelo(mensaje,catalogo));
+        return validarYConvertir(visitante, mensaje, catalogo, consultarModelo(mensaje,catalogo,historial));
     }
 
     private void validarRequest(InterpretarMensajeRequest request) {
@@ -148,7 +166,12 @@ public class InterpretacionPedidoService {
             String mensaje,
             List<Producto> catalogo) {
 
-        String entrada = construirEntrada(mensaje, catalogo);
+        return consultarModelo(mensaje, catalogo, List.of());
+    }
+
+    AiInterpretacionPedido consultarModelo(String mensaje, List<Producto> catalogo,
+                                           List<MensajeConversacion> historial) {
+        String entrada = construirEntrada(mensaje, catalogo, historial);
 
         try {
             StructuredResponseCreateParams<AiInterpretacionPedido> params =
@@ -184,6 +207,10 @@ public class InterpretacionPedidoService {
     }
 
     String construirEntrada(String mensaje, List<Producto> catalogo) {
+        return construirEntrada(mensaje, catalogo, List.of());
+    }
+
+    String construirEntrada(String mensaje, List<Producto> catalogo, List<MensajeConversacion> historial) {
         List<Map<String, Object>> productos = new ArrayList<>();
         for (Producto p : catalogo) {
             Map<String, Object> datos = new LinkedHashMap<>();
@@ -200,7 +227,8 @@ public class InterpretacionPedidoService {
         }
         try {
             return new ObjectMapper().writeValueAsString(Map.of(
-                    "catalogoAutorizado", productos, "mensajeCliente", mensaje));
+                    "catalogoAutorizado", productos, "mensajeCliente", mensaje,
+                    "historialConversacion", historial));
         } catch (JsonProcessingException ex) {
             throw new ServicioIaException("No se pudo preparar el catálogo para la IA.", ex);
         }

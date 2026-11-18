@@ -27,7 +27,7 @@ class WebChatPersistenceTest {
  @Test void confirmaEnBaseTemporalDescuentaUnaVezYPersisteHistorial(){
   Producto p=new Producto();p.setNombre("PUL-TEST");p.setDescripcion("Pulsera ojo tigre hilo");p.setStock(5);p.setPrecio(new BigDecimal("35.00"));p=productos.saveAndFlush(p);
   var r=new InterpretacionMensajeResponse(null,"Visitante","Quiero dos","CREAR_PEDIDO",List.of(new ItemInterpretadoResponse(p.getId(),p.getDescripcion(),"","","",2,p.getPrecio(),5,new BigDecimal("70.00"),.99)),new BigDecimal("70.00"),false,List.of(),"Dos pulseras por S/ 70.");
-  when(ia.interpretarPublico(anyString())).thenReturn(r);
+  when(ia.interpretarPublico(anyString(),anyList())).thenReturn(r);
   String id=UUID.randomUUID().toString();assertTrue(service.mensaje(id,"Quiero dos pulseras ojo tigre").puedeConfirmar());
   assertEquals(5,productos.findById(p.getId()).orElseThrow().getStock());assertEquals(0,pedidos.count());assertEquals(0,clientes.count());
   var confirmed=service.confirmar(id,"CLIENTE PRUEBA WEB","999888777",true);

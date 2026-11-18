@@ -25,14 +25,14 @@ class WebChatServiceTest {
         return new InterpretacionMensajeResponse(null,"Visitante web","mensaje",intencion,
             List.of(new ItemInterpretadoResponse(1L,"Pulsera ojo tigre hilo","Pulsera","","",2,new BigDecimal("35"),5,new BigDecimal("70"),.99)),new BigDecimal("70"),revision,List.of(),"¡Con gusto! Dos pulseras por S/ 70.");
     }
-    void propuesta(){when(ia.interpretarPublico(anyString())).thenReturn(resultado("CREAR_PEDIDO",false));service.mensaje(chat.getId(),"Quiero dos pulseras ojo tigre");}
+    void propuesta(){when(ia.interpretarPublico(anyString(),anyList())).thenReturn(resultado("CREAR_PEDIDO",false));service.mensaje(chat.getId(),"Quiero dos pulseras ojo tigre");}
     Producto producto(){var p=new Producto();p.setId(1L);p.setPrecio(new BigDecimal("35"));p.setStock(5);p.setActivo(true);return p;}
     @Test void consultaNoCreaClientesPedidosNiStock(){
-        when(ia.interpretarPublico(anyString())).thenReturn(resultado("CONSULTA_PRODUCTO",false));
+        when(ia.interpretarPublico(anyString(),anyList())).thenReturn(resultado("CONSULTA_PRODUCTO",false));
         assertFalse(service.mensaje(chat.getId(),"¿Cuánto cuesta?").puedeConfirmar());
         verifyNoInteractions(clientes,pedidos,productos);
     }
-    @Test void aclaracionNuncaPermiteConfirmar(){when(ia.interpretarPublico(anyString())).thenReturn(resultado("CREAR_PEDIDO",true));assertFalse(service.mensaje(chat.getId(),"Quiero una pulsera").puedeConfirmar());}
+    @Test void aclaracionNuncaPermiteConfirmar(){when(ia.interpretarPublico(anyString(),anyList())).thenReturn(resultado("CREAR_PEDIDO",true));assertFalse(service.mensaje(chat.getId(),"Quiero una pulsera").puedeConfirmar());}
     @Test void confirmaSoloOfertaDelServidorYReintentoNoDuplica(){
         propuesta();when(productos.findByIdForUpdate(1L)).thenReturn(Optional.of(producto()));
         when(clientes.save(any())).thenAnswer(a->{Cliente c=a.getArgument(0);c.setId(9L);return c;});
